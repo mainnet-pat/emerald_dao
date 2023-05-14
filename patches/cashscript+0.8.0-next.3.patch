@@ -1,0 +1,35 @@
+diff --git a/node_modules/cashscript/dist/index.d.ts b/node_modules/cashscript/dist/index.d.ts
+index 17c39f0..6990b31 100644
+--- a/node_modules/cashscript/dist/index.d.ts
++++ b/node_modules/cashscript/dist/index.d.ts
+@@ -1,3 +1,4 @@
++export { encodeArgument } from './Argument.js';
+ import SignatureTemplate from './SignatureTemplate.js';
+ export { SignatureTemplate };
+ export { Contract, ContractFunction } from './Contract.js';
+@@ -5,6 +6,6 @@ export { Transaction } from './Transaction.js';
+ export { Argument } from './Argument.js';
+ export { Artifact, AbiFunction, AbiInput } from '@cashscript/utils';
+ export * as utils from '@cashscript/utils';
+-export { Utxo, Recipient, SignatureAlgorithm, HashType, Network, } from './interfaces.js';
++export { Utxo, Recipient, SignatureAlgorithm, HashType, Network, isSignableUtxo } from './interfaces.js';
+ export * from './Errors.js';
+ export { NetworkProvider, BitcoinRpcNetworkProvider, ElectrumNetworkProvider, FullStackNetworkProvider, } from './network/index.js';
+\ No newline at end of file
+diff --git a/node_modules/cashscript/dist/index.js b/node_modules/cashscript/dist/index.js
+index 825ade0..e63306a 100644
+--- a/node_modules/cashscript/dist/index.js
++++ b/node_modules/cashscript/dist/index.js
+@@ -1,9 +1,10 @@
++export { encodeArgument } from './Argument.js';
+ import SignatureTemplate from './SignatureTemplate.js';
+ export { SignatureTemplate };
+ export { Contract } from './Contract.js';
+ export { Transaction } from './Transaction.js';
+ export * as utils from '@cashscript/utils';
+-export { SignatureAlgorithm, HashType, Network, } from './interfaces.js';
++export { SignatureAlgorithm, HashType, Network, isSignableUtxo } from './interfaces.js';
+ export * from './Errors.js';
+ export { BitcoinRpcNetworkProvider, ElectrumNetworkProvider, FullStackNetworkProvider, } from './network/index.js';
+ //# sourceMappingURL=index.js.map
+\ No newline at end of file

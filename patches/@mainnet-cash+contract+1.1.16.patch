@@ -1,0 +1,13 @@
+diff --git a/node_modules/@mainnet-cash/contract/dist/module/template.js b/node_modules/@mainnet-cash/contract/dist/module/template.js
+index e956c8e..a39f7bb 100644
+--- a/node_modules/@mainnet-cash/contract/dist/module/template.js
++++ b/node_modules/@mainnet-cash/contract/dist/module/template.js
+@@ -1,6 +1,6 @@
+ import { PrimitiveType } from "@cashscript/utils";
+-import { encodeArgument as csEncodeArgument, } from "cashscript/dist/Argument";
+-import { isSignableUtxo, } from "cashscript/dist/interfaces";
++import { encodeArgument as csEncodeArgument, } from "cashscript";
++import { isSignableUtxo, } from "cashscript";
+ import { hash160, hexToBin, binToBase64, utf8ToBin, decodeTransaction, binToHex, } from "@bitauth/libauth";
+ import { deflate } from "pako";
+ import { Network } from "mainnet-js";
