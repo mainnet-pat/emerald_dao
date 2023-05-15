@@ -300,6 +300,45 @@ export default dynamic(() => Promise.resolve(() => {
     }
   }, [tokenId, contractAddress, connectedAddress, setWalletBalance, setTokens]);
 
+  const consolidate = useCallback(async () => {
+    const userWallet = await WalletClass.watchOnly(connectedAddress!);
+    const response = await userWallet.sendMax(connectedAddress!, { buildUnsigned: true });
+
+    const decoded = decodeTransaction(hexToBin(response.unsignedTransaction!));
+    if (typeof decoded === "string") {
+      setError(decoded);
+      setTimeout(() => setError(""), 10000);
+      return;
+    }
+
+    const signResult = await window.paytaca!.signTransaction({
+      transaction: decoded,
+      sourceOutputs: response.sourceOutputs!,
+      broadcast: false,
+      userPrompt: "Sign to consolidate"
+    });
+
+    if (signResult === undefined) {
+      setError("User rejected the transaction signing request");
+      setTimeout(() => setError(""), 10000);
+      return;
+    }
+
+    try {
+      await userWallet.submitTransaction(hexToBin(signResult.signedTransaction), true);
+    } catch (e) {
+      console.trace(e);
+      setError((e as any).message);
+      setTimeout(() => setError(""), 10000);
+      return;
+    }
+
+    {
+      const utxos = await userWallet.getAddressUtxos();
+      setWalletBalance(utxos.reduce((prev, cur) => cur.satoshis + prev, 0));
+    }
+  }, [connectedAddress]);
+
   const signMessage = useCallback(async (message: string) => {
     const signedMessage = await window.paytaca!.signMessage({message, userPrompt: "Sign this test message"});
     if (signedMessage === undefined) {
@@ -394,6 +433,19 @@ export default dynamic(() => Promise.resolve(() => {
             </div>
           </div>
         </>}
+
+        <>
+          <hr className='my-5'/>
+          <div>
+            <div>Tools</div>
+            <div>
+              <button type="button" onClick={() => consolidate()}className={`inline-block px-6 py-2.5 bg-gray-200 text-gray-700 font-medium text-xs leading-tight uppercase rounded shadow-md hover:bg-gray-300 hover:shadow-lg  active:bg-gray-400 active:shadow-lg transition duration-150 ease-in-out`}>Consolidate UTXOs</button>
+            </div>
+          </div>
+        </>
+
+
+
       </main>
     </>
   )
