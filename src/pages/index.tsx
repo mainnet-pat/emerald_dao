@@ -9,7 +9,7 @@ import { SignatureTemplate, Utxo } from 'cashscript';
 import Image from 'next/image';
 import { Artifact, scriptToBytecode, sha256 } from '@cashscript/utils';
 
-const isActivated = (+ new Date() / 1000) > 1684152000 && (await (await Wallet.watchOnly("bitcoincash:pqzwlpeg7m62r9h7w0js2uh2250d8hmkjysafc4su4")).getTokenUtxos()).length
+const isActivated = true;
 
 const WalletClass = isActivated ? Wallet : TestNetWallet;
 
@@ -160,7 +160,6 @@ export default dynamic(() => Promise.resolve(() => {
         break;
       }
     }
-    console.log(daoInput)
 
     const lastMinted = Number("0x" + swapEndianness(daoInput.token?.nft?.commitment));
     const leftToMint = daoMaxSafeboxes - lastMinted;
@@ -172,7 +171,7 @@ export default dynamic(() => Promise.resolve(() => {
     const keycardCommitment = nextCommitment + binToHex(binToFixedLength(numberToBinUintLE(satsToLock), 8));
 
     const userUtxos = (await userWallet.getAddressUtxos()).map(toCashScript).filter(
-      val => val.satoshis >= (Number(daoDustLimit) * 2 + Number(daoChildSafeboxNominalValue) + txfee),
+      val => !val.token && val.satoshis >= (Number(daoDustLimit) * 2 + Number(daoChildSafeboxNominalValue) + txfee + 500),
     );
     const userInput = userUtxos[0];
     const userSig = new SignatureTemplate(Uint8Array.from(Array(32)));
@@ -223,8 +222,7 @@ export default dynamic(() => Promise.resolve(() => {
     (transaction as any).locktime = 0;
     await transaction.build();
     (transaction as any).outputs[3].to = userWallet.cashaddr;
-
-    // console.log(getBitauthUri(await buildTemplate({contract: vaultContract, transaction, manglePrivateKeys: true})));
+    (transaction as any).outputs[3].amount = (transaction as any).outputs[3].amount - 500n;
 
     const decoded = decodeTransaction(hexToBin(await transaction.build()));
     if (typeof decoded === "string") {
@@ -278,6 +276,11 @@ export default dynamic(() => Promise.resolve(() => {
     } catch (e) {
       if ((e as any).message.indexOf('txn-mempool-conflict (code 18)') !== -1) {
         setError("Someone was faster than you at minting this NFT, please try again with the next one");
+        setTimeout(() => setError(""), 10000);
+        return;
+      } else {
+        console.trace(e);
+        setError((e as any).message);
         setTimeout(() => setError(""), 10000);
         return;
       }

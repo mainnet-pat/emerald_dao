@@ -29,14 +29,6 @@
     "@bitauth/libauth" "^2.0.0-alpha.8"
     hash.js "^1.1.7"
 
-"@cashscript/utils@^0.8.0-next.2":
-  version "0.8.0-next.2"
-  resolved "https://registry.yarnpkg.com/@cashscript/utils/-/utils-0.8.0-next.2.tgz#d20ce90d56ca2bc9ec521f3de2dab67733a0641f"
-  integrity sha512-9/5PAxqGGoCEq3IxIXfsOFs59/BNiViCfVMhc0yf0toLZ4SkR1XYmNlQ7d7gttoYbIHi+F7X+th8/kEsUGzr2A==
-  dependencies:
-    "@bitauth/libauth" "^2.0.0-alpha.8"
-    hash.js "^1.1.7"
-
 "@eslint/eslintrc@^1.4.1":
   version "1.4.1"
   resolved "https://registry.yarnpkg.com/@eslint/eslintrc/-/eslintrc-1.4.1.tgz#af58772019a2d271b7e2d4c23ff4ddcba3ccfb3e"
@@ -71,16 +63,16 @@
   resolved "https://registry.yarnpkg.com/@humanwhocodes/object-schema/-/object-schema-1.2.1.tgz#b520529ec21d8e5945a1851dfd1c32e94e39ff45"
   integrity sha512-ZnQMnLV4e7hDlUvw8H+U8ASL02SS2Gn6+9Ac3wGGLIe7+je2AeAOxPY+izIPJDfFDb7eDjev0Us8MO1iFRN8hA==
 
-"@mainnet-cash/contract@^1.1.16":
-  version "1.1.16"
-  resolved "https://registry.yarnpkg.com/@mainnet-cash/contract/-/contract-1.1.16.tgz#511a4046e197874f3629398b623159fe5b2150f8"
-  integrity sha512-Xj8tTr/AVeAapitjTTejF2t6qQPD8ZRwNHWMpdaaQAxSWWqlnDSlqSOeazZEI1CakIdh1Hn57C3QQYf8ud3Y3A==
+"@mainnet-cash/contract@^1.1.19":
+  version "1.1.19"
+  resolved "https://registry.yarnpkg.com/@mainnet-cash/contract/-/contract-1.1.19.tgz#6301dd7aaefe9eec3010e6443dd88873bba8aa00"
+  integrity sha512-Isacft3G/evRGcAfyckG/N8VY2ivqWRE7rGXjdS7qQ+aUVEmvCFayTSdIpFxVcVf1SUb/fG2S1iRH8p6+w3L2A==
   dependencies:
     "@cashscript/utils" "^0.8.0-next.3"
     "@types/pako" "^2.0.0"
-    cashc "^0.8.0-next.2"
+    cashc "^0.8.0-next.3"
     cashscript "^0.8.0-next.3"
-    mainnet-js "1.1.16"
+    mainnet-js "1.1.19"
     pako "^2.1.0"
 
 "@next/env@13.1.6":
@@ -723,13 +715,13 @@ cashaddrjs@^0.4.4:
   dependencies:
     big-integer "1.6.36"
 
-cashc@^0.8.0-next.2:
-  version "0.8.0-next.2"
-  resolved "https://registry.yarnpkg.com/cashc/-/cashc-0.8.0-next.2.tgz#e5bd306bf51af79d591231225ad9bb194226fda6"
-  integrity sha512-ddlgJcxsrEkyHcB7fzY1PBNU532dA5r2S8Y2KbB9aF2F8uxm8g7rH7F6MInx6EpOv/f4L6AysDnpWYKeY9dfjQ==
+cashc@^0.8.0-next.3:
+  version "0.8.0-next.3"
+  resolved "https://registry.yarnpkg.com/cashc/-/cashc-0.8.0-next.3.tgz#b22be7ff91ffc6f12742e41acf0056fc25299f9f"
+  integrity sha512-P3RQrnlWdGfqxKHHwB568fnRhl/wQmrPXNt9WiTU6d8ctQx+4tqLBbG1WfD7Evs4pCnz9viLM2asp/N6lOPEBw==
   dependencies:
     "@bitauth/libauth" "^2.0.0-alpha.8"
-    "@cashscript/utils" "^0.8.0-next.2"
+    "@cashscript/utils" "^0.8.0-next.3"
     antlr4ts "^0.5.0-alpha.4"
     commander "^7.1.0"
     semver "^7.3.4"
@@ -2155,10 +2147,10 @@ lru-cache@^6.0.0:
   dependencies:
     yallist "^4.0.0"
 
-mainnet-js@1.1.16, mainnet-js@^1.1.16:
-  version "1.1.16"
-  resolved "https://registry.yarnpkg.com/mainnet-js/-/mainnet-js-1.1.16.tgz#64e8a18a7acca24b8e569e3b6c3b91638f42e20d"
-  integrity sha512-ne1Bq+kPH3bAaAu8BgI1Z9EGzc3cTwU3RTxDITyU9q4EpJ8jfVu/gbhl/6nBuZIoTHa2WyTKaOo3a6BvK+nx1g==
+mainnet-js@1.1.19, mainnet-js@^1.1.19:
+  version "1.1.19"
+  resolved "https://registry.yarnpkg.com/mainnet-js/-/mainnet-js-1.1.19.tgz#a3d340c0158709b5b914817be5b340aaafd87b4c"
+  integrity sha512-TfFzKDLb81UxE9YCzA0MIDlPBesU9cTuc5NlwuOK3DCl2nxaTsBxJrOIpjXk4l8zv6k1thU3TaUTpVVPB+dmaQ==
   dependencies:
     "@bitauth/libauth" "^2.0.0-alpha.8"
     async-mutex "^0.3.1"
