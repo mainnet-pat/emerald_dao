@@ -312,8 +312,6 @@ export default dynamic(() => Promise.resolve(() => {
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
-      <div className='absolute bottom-0 text-xs'>{ isActivated ? 'mainnet!' : 'chipnet' }</div>
-
       <div className={`w-full flex justify-center flex-col md:flex-row mb-1`}>
         <div>
           Brought to you by
