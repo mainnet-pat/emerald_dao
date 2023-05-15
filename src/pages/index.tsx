@@ -174,6 +174,11 @@ export default dynamic(() => Promise.resolve(() => {
       val => !val.token && val.satoshis >= (Number(daoDustLimit) * 2 + Number(daoChildSafeboxNominalValue) + txfee + 500),
     );
     const userInput = userUtxos[0];
+    if (!userInput) {
+      setError("No suitable utxos found for mint. Try to consolidate your utxos!");
+      setTimeout(() => setError(""), 10000);
+      return;
+    }
     const userSig = new SignatureTemplate(Uint8Array.from(Array(32)));
 
     const func = vaultContract.getContractFunction("OnlyOne");
