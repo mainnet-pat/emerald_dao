@@ -9,7 +9,7 @@ import { SignatureTemplate, Utxo } from 'cashscript';
 import Image from 'next/image';
 import { Artifact, scriptToBytecode, sha256 } from '@cashscript/utils';
 
-const isActivated = (+ new Date() / 1000) > 1684152000 && (await (await Wallet.watchOnly("bitcoincash:qrwwskgf29na05n493rmh4ewk5tk4wrmyvgek740jf")).getAddressUtxos()).length
+const isActivated = (+ new Date() / 1000) > 1684152000 && (await (await Wallet.watchOnly("bitcoincash:pqzwlpeg7m62r9h7w0js2uh2250d8hmkjysafc4su4")).getTokenUtxos()).length
 
 const WalletClass = isActivated ? Wallet : TestNetWallet;
 
@@ -311,6 +311,8 @@ export default dynamic(() => Promise.resolve(() => {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
+
+      <div className='absolute bottom-0 text-xs'>{ isActivated ? 'mainnet!' : 'chipnet' }</div>
 
       <div className={`w-full flex justify-center flex-col md:flex-row mb-1`}>
         <div>
