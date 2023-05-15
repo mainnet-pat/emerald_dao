@@ -33,7 +33,16 @@ const nextConfig = {
 
     return config
   },
-
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'ipfs.pat.mn',
+        port: '',
+        pathname: '/ipfs/**',
+      },
+    ],
+  },
 }
 
 module.exports = nextConfig

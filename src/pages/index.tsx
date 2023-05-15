@@ -413,7 +413,7 @@ export default dynamic(() => Promise.resolve(() => {
             {tokens.map(commitment =>
               <div key={commitment}>
                 <div className="flex flex-col items-center">
-                  <Image src="/emerald.jpg" alt={commitment} width="128" height="128" />
+                  <Image src="https://ipfs.pat.mn/ipfs/QmcNL1KcVmiDtwJe8WokrnzYeoHirsz1sNxNojncsxyb2p" alt={commitment} width="128" height="128" />
                   <hr className={`mt-1 border-solid border-2 w-[128px]`} style={{borderColor: `#${binToHex(sha256(hexToBin(commitment)).slice(0, 3))}`}} />
                 </div>
                 <span># { binToNumberUint16LE(hexToBin(commitment.slice(0,4))) }</span><br/>
