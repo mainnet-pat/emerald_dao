@@ -1,10 +1,10 @@
 import dynamic from 'next/dynamic'
 import Head from 'next/head'
 import styles from '@/styles/Home.module.css'
-import { DefaultProvider, Mainnet, NFTCapability, Network, TestNetWallet, UtxoI, Wallet, WalletTypeEnum, hexToBin, toTokenaddr } from 'mainnet-js'
+import { DefaultProvider, Network, TestNetWallet, UtxoI, Wallet, hexToBin } from 'mainnet-js'
 import { useCallback, useEffect, useState } from 'react';
-import { Contract, buildTemplate, getBitauthUri, getSignatureTemplate } from '@mainnet-cash/contract';
-import { CashAddressNetworkPrefix, CashAddressType, Transaction, binToHex, binToNumberInt32LE, binToNumberUint16LE, binToUtf8, cashAddressToLockingBytecode, decodeCashAddress, decodeTransaction, encodeCashAddress, numberToBinUint16LE } from '@bitauth/libauth';
+import { Contract } from '@mainnet-cash/contract';
+import { CashAddressNetworkPrefix, CashAddressType, binToHex, binToNumberInt32LE, binToNumberUint16LE, cashAddressToLockingBytecode, decodeCashAddress, decodeTransaction, encodeCashAddress } from '@bitauth/libauth';
 import { SignatureTemplate, Utxo } from 'cashscript';
 import Image from 'next/image';
 import { Artifact, scriptToBytecode, sha256 } from '@cashscript/utils';
@@ -144,6 +144,120 @@ export default dynamic(() => Promise.resolve(() => {
     setConnectedAddress(null);
     setTokens([]);
   }, [setConnectedAddress]);
+
+  const donate = useCallback(async () =>
+  {
+    const userWallet = await WalletClass.watchOnly(connectedAddress!);
+
+    const txfee = 800;
+
+    const donation = 10000000;
+
+    let daoInput: Utxo = {} as any;
+    const daoUtxos = await vaultContract.getUtxos();
+    for (let i=0; i<daoUtxos.length; i++) {
+      if (daoUtxos[i].token?.tokenId == daoId) {
+        daoInput = toCashScript(daoUtxos[i]);
+        break;
+      }
+    }
+
+    const userUtxos = (await userWallet.getAddressUtxos()).map(toCashScript).filter(
+      val => !val.token && val.satoshis >= (donation + txfee + 500),
+    );
+    const userInput = userUtxos[0];
+    if (!userInput) {
+      setError("No suitable utxos found for donation. Try to consolidate your utxos!");
+      setTimeout(() => setError(""), 10000);
+      return;
+    }
+    const userSig = new SignatureTemplate(Uint8Array.from(Array(32)));
+
+    const func = vaultContract.getContractFunction("OnlyOne");
+    const transaction = func().from(daoInput).fromP2PKH(userInput, userSig).to([
+      // contract pass-by
+      {
+        to: vaultContract.getTokenDepositAddress(),
+        amount: BigInt(Number(daoInput.satoshis) + donation),
+        token: daoInput.token,
+      }
+    ]).withoutTokenChange().withHardcodedFee(BigInt(txfee));
+
+    (transaction as any).locktime = 0;
+    await transaction.build();
+    (transaction as any).outputs[1].to = userWallet.cashaddr;
+    (transaction as any).outputs[1].amount = (transaction as any).outputs[1].amount - 500n;
+
+    const decoded = decodeTransaction(hexToBin(await transaction.build()));
+    if (typeof decoded === "string") {
+      setError(decoded);
+      setTimeout(() => setError(""), 10000);
+      return;
+    }
+    decoded.inputs[1].unlockingBytecode = Uint8Array.from([]);
+
+    const bytecode = (transaction as any).redeemScript;
+    const artifact = {...vaultContract.artifact} as Partial<Artifact>;
+    delete artifact.source;
+    delete artifact.bytecode;
+
+    const signResult = await window.paytaca!.signTransaction({
+      transaction: decoded,
+      sourceOutputs: [{
+        ...decoded.inputs[0],
+        lockingBytecode: (cashAddressToLockingBytecode(contractAddress!) as any).bytecode,
+        valueSatoshis: BigInt(daoInput.satoshis),
+        token: daoInput.token && {
+          ...daoInput.token,
+          category: hexToBin(daoInput.token.category),
+          nft: daoInput.token.nft && {
+            ...daoInput.token.nft,
+            commitment: hexToBin(daoInput.token.nft.commitment),
+          },
+        },
+        contract: {
+          abiFunction: (transaction as any).abiFunction,
+          redeemScript: scriptToBytecode(bytecode),
+          artifact: artifact,
+        }
+      }, {
+        ...decoded.inputs[1],
+        lockingBytecode: (cashAddressToLockingBytecode(connectedAddress!) as any).bytecode,
+        valueSatoshis: BigInt(userInput.satoshis),
+      }],
+      broadcast: false,
+      userPrompt: "Donate BCH to DAO's reward pool"
+    });
+
+    if (signResult === undefined) {
+      setError("User rejected the transaction signing request");
+      setTimeout(() => setError(""), 10000);
+      return;
+    }
+
+    try {
+      await userWallet.submitTransaction(hexToBin(signResult.signedTransaction), true);
+    } catch (e) {
+      if ((e as any).message.indexOf('txn-mempool-conflict (code 18)') !== -1) {
+        setError("Someone already extended the same DAO UTXO, please try again with the next one");
+        setTimeout(() => setError(""), 10000);
+        return;
+      } else {
+        console.trace(e);
+        setError((e as any).message);
+        setTimeout(() => setError(""), 10000);
+        return;
+      }
+    }
+
+    {
+      const utxos = await userWallet.getAddressUtxos();
+      setWalletBalance(utxos.reduce((prev, cur) => cur.satoshis + prev, 0));
+
+      const tokenUtxos = utxos.filter(utxo => utxo.token?.tokenId === tokenId).sort((a, b) => binToNumberUint16LE(hexToBin(a.token!.commitment!)) - binToNumberUint16LE(hexToBin(b.token!.commitment!)));
+      setTokens(tokenUtxos.map(val => val.token!.commitment!));
+    }
+  }, [tokenId, contractAddress, connectedAddress, setWalletBalance, setTokens]);
 
   const mint = useCallback(async () =>
   {
@@ -364,10 +478,10 @@ export default dynamic(() => Promise.resolve(() => {
           Brought to you by
         </div>
         <div>
-          <a href='https://t.me/bitcoincashautist' rel="noreferrer" className="text-sky-700 ml-1" target='_blank'>bitcoincashautist</a> (contract)
+          <a href='https://twitter.com/bchautist' rel="noreferrer" className="text-sky-700 ml-1" target='_blank'>bitcoincashautist</a> (contract)
         </div>
         <div>
-          <a href='https://t.me/mainnet_pat' rel="noreferrer" className="text-sky-700 ml-1" target='_blank'>mainnet_pat</a> (UI, Paytaca integration)
+          <a href='https://twitter.com/mainnet_pat' rel="noreferrer" className="text-sky-700 ml-1" target='_blank'>mainnet_pat</a> (UI, Paytaca integration)
         </div>
       </div>
 
@@ -397,9 +511,12 @@ export default dynamic(() => Promise.resolve(() => {
         {connectedAddress && <>
           Connected wallet: <div>{ connectedAddress }</div>
           Balance: <div>{ (walletBalance ?? 0) / 1e8 } BCH { walletBalance === 0 && <span>Get some tBCH on <a rel="noreferrer" className="text-sky-700" href='http://tbch.googol.cash' target='_blank'>http://tbch.googol.cash</a>, select chipnet</span>} </div>
-          <div className='flex flex-row gap-5'>
+          <div className='flex flex-row flex-wrap gap-5'>
             {contractAddress && <div>
               <button type="button" onClick={() => mint()} disabled={maxAmount === mintedAmount} className={`inline-block px-6 py-2.5 bg-gray-200 text-gray-700 font-medium text-xs leading-tight uppercase rounded shadow-md hover:bg-gray-300 hover:shadow-lg  active:bg-gray-400 active:shadow-lg transition duration-150 ease-in-out ${maxAmount === mintedAmount ? "line-through" : ""}`}>Mint new NFT</button>
+            </div>}
+            {contractAddress && <div>
+              <button type="button" onClick={() => donate()} disabled={maxAmount === mintedAmount} className={`inline-block px-6 py-2.5 bg-gray-200 text-gray-700 font-medium text-xs leading-tight uppercase rounded shadow-md hover:bg-gray-300 hover:shadow-lg  active:bg-gray-400 active:shadow-lg transition duration-150 ease-in-out ${maxAmount === mintedAmount ? "line-through" : ""}`}>Donate 0.1 BCH to DAO's reward pool</button>
             </div>}
             <div>
               <button type="button" onClick={() => disconnect()} className="inline-block px-6 py-2.5 bg-gray-200 text-gray-700 font-medium text-xs leading-tight uppercase rounded shadow-md hover:bg-gray-300 hover:shadow-lg  active:bg-gray-400 active:shadow-lg transition duration-150 ease-in-out">Disconnect paytaca</button>
@@ -443,9 +560,6 @@ export default dynamic(() => Promise.resolve(() => {
             </div>
           </div>
         </>
-
-
-
       </main>
     </>
   )
