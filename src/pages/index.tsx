@@ -1,10 +1,10 @@
 import dynamic from 'next/dynamic'
 import Head from 'next/head'
 import styles from '@/styles/Home.module.css'
-import { DefaultProvider, Mainnet, NFTCapability, Network, TestNetWallet, UtxoI, Wallet, WalletTypeEnum, hexToBin, toTokenaddr } from 'mainnet-js'
+import { DefaultProvider, Network, TestNetWallet, UtxoI, Wallet, hexToBin } from 'mainnet-js'
 import { useCallback, useEffect, useState } from 'react';
-import { Contract, buildTemplate, getBitauthUri, getSignatureTemplate } from '@mainnet-cash/contract';
-import { CashAddressNetworkPrefix, CashAddressType, Transaction, binToHex, binToNumberInt32LE, binToNumberUint16LE, binToUtf8, cashAddressToLockingBytecode, decodeCashAddress, decodeTransaction, encodeCashAddress, numberToBinUint16LE } from '@bitauth/libauth';
+import { Contract } from '@mainnet-cash/contract';
+import { CashAddressNetworkPrefix, CashAddressType, binToHex, binToNumberInt32LE, binToNumberUint16LE, cashAddressToLockingBytecode, decodeCashAddress, decodeTransaction, encodeCashAddress } from '@bitauth/libauth';
 import { SignatureTemplate, Utxo } from 'cashscript';
 import Image from 'next/image';
 import { Artifact, scriptToBytecode, sha256 } from '@cashscript/utils';
@@ -179,14 +179,7 @@ export default dynamic(() => Promise.resolve(() => {
       {
         to: vaultContract.getTokenDepositAddress(),
         amount: BigInt(Number(daoInput.satoshis) + donation),
-        token: {
-          category: daoInput.token?.category!,
-          amount: BigInt(0),
-          nft: {
-            capability: "minting",
-            commitment: daoInput.token?.nft?.commitment,
-          },
-        },
+        token: daoInput.token,
       }
     ]).withoutTokenChange().withHardcodedFee(BigInt(txfee));
 
@@ -488,7 +481,7 @@ export default dynamic(() => Promise.resolve(() => {
           <a href='https://twitter.com/bchautist' rel="noreferrer" className="text-sky-700 ml-1" target='_blank'>bitcoincashautist</a> (contract)
         </div>
         <div>
-          <a href='https://t.me/mainnet_pat' rel="noreferrer" className="text-sky-700 ml-1" target='_blank'>mainnet_pat</a> (UI, Paytaca integration)
+          <a href='https://twitter.com/mainnet_pat' rel="noreferrer" className="text-sky-700 ml-1" target='_blank'>mainnet_pat</a> (UI, Paytaca integration)
         </div>
       </div>
 
@@ -518,9 +511,12 @@ export default dynamic(() => Promise.resolve(() => {
         {connectedAddress && <>
           Connected wallet: <div>{ connectedAddress }</div>
           Balance: <div>{ (walletBalance ?? 0) / 1e8 } BCH { walletBalance === 0 && <span>Get some tBCH on <a rel="noreferrer" className="text-sky-700" href='http://tbch.googol.cash' target='_blank'>http://tbch.googol.cash</a>, select chipnet</span>} </div>
-          <div className='flex flex-row gap-5'>
+          <div className='flex flex-row flex-wrap gap-5'>
             {contractAddress && <div>
               <button type="button" onClick={() => mint()} disabled={maxAmount === mintedAmount} className={`inline-block px-6 py-2.5 bg-gray-200 text-gray-700 font-medium text-xs leading-tight uppercase rounded shadow-md hover:bg-gray-300 hover:shadow-lg  active:bg-gray-400 active:shadow-lg transition duration-150 ease-in-out ${maxAmount === mintedAmount ? "line-through" : ""}`}>Mint new NFT</button>
+            </div>}
+            {contractAddress && <div>
+              <button type="button" onClick={() => donate()} disabled={maxAmount === mintedAmount} className={`inline-block px-6 py-2.5 bg-gray-200 text-gray-700 font-medium text-xs leading-tight uppercase rounded shadow-md hover:bg-gray-300 hover:shadow-lg  active:bg-gray-400 active:shadow-lg transition duration-150 ease-in-out ${maxAmount === mintedAmount ? "line-through" : ""}`}>Donate 0.1 BCH to DAO's reward pool</button>
             </div>}
             <div>
               <button type="button" onClick={() => disconnect()} className="inline-block px-6 py-2.5 bg-gray-200 text-gray-700 font-medium text-xs leading-tight uppercase rounded shadow-md hover:bg-gray-300 hover:shadow-lg  active:bg-gray-400 active:shadow-lg transition duration-150 ease-in-out">Disconnect paytaca</button>
@@ -561,9 +557,6 @@ export default dynamic(() => Promise.resolve(() => {
             <div>Tools</div>
             <div>
               <button type="button" onClick={() => consolidate()}className={`inline-block px-6 py-2.5 bg-gray-200 text-gray-700 font-medium text-xs leading-tight uppercase rounded shadow-md hover:bg-gray-300 hover:shadow-lg  active:bg-gray-400 active:shadow-lg transition duration-150 ease-in-out`}>Consolidate UTXOs</button>
-            </div>
-            <div>
-              <button type="button" onClick={() => donate()} disabled={maxAmount === mintedAmount} className={`inline-block px-6 py-2.5 bg-gray-200 text-gray-700 font-medium text-xs leading-tight uppercase rounded shadow-md hover:bg-gray-300 hover:shadow-lg  active:bg-gray-400 active:shadow-lg transition duration-150 ease-in-out ${maxAmount === mintedAmount ? "line-through" : ""}`}>Donate 0.1 BCH to DAO's reward pool</button>
             </div>
           </div>
         </>
