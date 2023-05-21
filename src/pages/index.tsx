@@ -516,7 +516,7 @@ export default dynamic(() => Promise.resolve(() => {
               <button type="button" onClick={() => mint()} disabled={maxAmount === mintedAmount} className={`inline-block px-6 py-2.5 bg-gray-200 text-gray-700 font-medium text-xs leading-tight uppercase rounded shadow-md hover:bg-gray-300 hover:shadow-lg  active:bg-gray-400 active:shadow-lg transition duration-150 ease-in-out ${maxAmount === mintedAmount ? "line-through" : ""}`}>Mint new NFT</button>
             </div>}
             {contractAddress && <div>
-              <button type="button" onClick={() => donate()} disabled={maxAmount === mintedAmount} className={`inline-block px-6 py-2.5 bg-gray-200 text-gray-700 font-medium text-xs leading-tight uppercase rounded shadow-md hover:bg-gray-300 hover:shadow-lg  active:bg-gray-400 active:shadow-lg transition duration-150 ease-in-out ${maxAmount === mintedAmount ? "line-through" : ""}`}>Donate 0.1 BCH to DAO's reward pool</button>
+              <button type="button" onClick={() => donate()} disabled={maxAmount === mintedAmount} className={`inline-block px-6 py-2.5 bg-gray-200 text-gray-700 font-medium text-xs leading-tight uppercase rounded shadow-md hover:bg-gray-300 hover:shadow-lg  active:bg-gray-400 active:shadow-lg transition duration-150 ease-in-out ${maxAmount === mintedAmount ? "line-through" : ""}`}>Donate 0.1 BCH to DAO&apos;s reward pool</button>
             </div>}
             <div>
               <button type="button" onClick={() => disconnect()} className="inline-block px-6 py-2.5 bg-gray-200 text-gray-700 font-medium text-xs leading-tight uppercase rounded shadow-md hover:bg-gray-300 hover:shadow-lg  active:bg-gray-400 active:shadow-lg transition duration-150 ease-in-out">Disconnect paytaca</button>
