@@ -82,7 +82,7 @@ export default dynamic(() => Promise.resolve(() => {
     })()
   }, [tokenId, setMintedAmount, setContractBalance, contractAddress]);
 
-  window.paytaca.on("addressChanged", (address: string) => {
+  window.paytaca?.on("addressChanged", (address: string) => {
     setConnectedAddress("");
   });
 
