@@ -13,7 +13,7 @@ const isActivated = true;
 
 const WalletClass = isActivated ? Wallet : TestNetWallet;
 
-DefaultProvider.servers.testnet = ["wss://blackie.c3-soft.com:64004"];
+DefaultProvider.servers.mainnet = ["wss://fulcrum.pat.mn:50004"];
 
 export const toCashScript = (utxo: UtxoI) =>
   ({
@@ -55,6 +55,10 @@ export default dynamic(() => Promise.resolve(() => {
   const [error, setError] = useState<string>("");
   const [mintedAmount, setMintedAmount] = useState<number>(0);
   const [mintCost, setMintCost] = useState<number>(daoChildSafeboxNominalValue);
+  const [loading, setLoading] = useState<boolean>(true);
+  useEffect(() => {
+    setTimeout(() => setLoading(false), 1000);
+  }, []);
 
   useEffect(() => {
     (async () => {
@@ -464,7 +468,16 @@ export default dynamic(() => Promise.resolve(() => {
     }
   }, []);
 
-  return (
+  return loading ? (
+    <div className="loader-container">
+      <div className="spinner"></div>
+    </div>
+  ) : (window.paytaca === undefined ?
+      <>
+        <div>Paytaca plugin is not installed or not supported by your browser</div>
+        <div>Please use Brave browser and fetch <a href="https://chrome.google.com/webstore/detail/paytaca/pakphhpnneopheifihmjcjnbdbhaaiaa" rel="noreferrer" className="text-sky-700 ml-1" target='_blank'>Paytaca extension</a> from the store</div>
+      </>
+   :
     <>
       <Head>
         <title>Emerald DAO</title>
