@@ -149,6 +149,58 @@ export default dynamic(() => Promise.resolve(() => {
     setTokens([]);
   }, [setConnectedAddress]);
 
+  const closeVault = useCallback(async () =>
+  {
+    const userWallet = await WalletClass.watchOnly(connectedAddress!);
+
+    let daoInput: Utxo = {} as any;
+    const daoUtxos = await vaultContract.getUtxos();
+    for (let i=0; i<daoUtxos.length; i++) {
+      if (daoUtxos[i].token?.tokenId == daoId) {
+        daoInput = toCashScript(daoUtxos[i]);
+        break;
+      }
+    }
+
+    const func = vaultContract.getContractFunction("OnlyOne");
+    const transaction = func().from(daoInput).to([
+      {
+        to: userWallet.cashaddr,
+        amount: BigInt(Number(daoExecutorFee))
+      },
+      {
+        // this should get the address from daoRewardsRemainderBeneficiary but I just hard-coded it because easier
+        to: "bitcoincash:qqsxjha225lmnuedy6hzlgpwqn0fd77dfq73p60wwp",
+        amount: BigInt(Number(daoInput.satoshis) - Number(daoExecutorFee) - Number(daoFeeAllowance))
+      }
+    ]).withoutChange().withoutTokenChange();
+    (transaction as any).locktime = Number(daoVaultCloseLocktime);
+    await transaction.build();
+
+    try {
+      await transaction.send();
+    } catch (e) {
+      if ((e as any).message.indexOf('txn-mempool-conflict (code 18)') !== -1) {
+        setError("Someone already extended the same DAO UTXO, please try again with the next one");
+        setTimeout(() => setError(""), 10000);
+        return;
+      } else {
+        console.trace(e);
+        setError((e as any).message);
+        setTimeout(() => setError(""), 10000);
+        return;
+      }
+    }
+
+    {
+      const utxos = await userWallet.getAddressUtxos();
+      setWalletBalance(utxos.reduce((prev, cur) => cur.satoshis + prev, 0));
+
+      const tokenUtxos = utxos.filter(utxo => utxo.token?.tokenId === tokenId).sort((a, b) => binToNumberUint16LE(hexToBin(a.token!.commitment!)) - binToNumberUint16LE(hexToBin(b.token!.commitment!)));
+      setTokens(tokenUtxos.map(val => val.token!.commitment!));
+    }
+  }, [tokenId, contractAddress, connectedAddress, setWalletBalance, setTokens]);
+
   const donate = useCallback(async () =>
   {
     const userWallet = await WalletClass.watchOnly(connectedAddress!);
@@ -530,6 +582,9 @@ export default dynamic(() => Promise.resolve(() => {
             </div>}
             {contractAddress && <div>
               <button type="button" onClick={() => donate()} disabled={maxAmount === mintedAmount} className={`inline-block px-6 py-2.5 bg-gray-200 text-gray-700 font-medium text-xs leading-tight uppercase rounded shadow-md hover:bg-gray-300 hover:shadow-lg  active:bg-gray-400 active:shadow-lg transition duration-150 ease-in-out ${maxAmount === mintedAmount ? "line-through" : ""}`}>Donate 0.1 BCH to DAO&apos;s reward pool</button>
+            </div>}
+            {contractAddress && <div>
+              <button type="button" onClick={() => closeVault()} disabled={maxAmount === mintedAmount} className={`inline-block px-6 py-2.5 bg-gray-200 text-gray-700 font-medium text-xs leading-tight uppercase rounded shadow-md hover:bg-gray-300 hover:shadow-lg  active:bg-gray-400 active:shadow-lg transition duration-150 ease-in-out ${maxAmount === mintedAmount ? "line-through" : ""}`}>Burn the Minting Contract</button>
             </div>}
             <div>
               <button type="button" onClick={() => disconnect()} className="inline-block px-6 py-2.5 bg-gray-200 text-gray-700 font-medium text-xs leading-tight uppercase rounded shadow-md hover:bg-gray-300 hover:shadow-lg  active:bg-gray-400 active:shadow-lg transition duration-150 ease-in-out">Disconnect paytaca</button>
